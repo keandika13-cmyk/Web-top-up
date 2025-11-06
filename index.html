@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Hilz Market — Top Up Game</title>
+  <style>
+    :root{
+      --bg:#0b1220;
+      --card:#0f1724;
+      --muted:#9aa6bf;
+      --accent:#0ea5e9;
+      --accent-2:#0369a1;
+      --glass: rgba(255,255,255,0.03);
+      --success:#10b981;
+      --danger:#ef4444;
+      --radius:14px;
+      --maxw:980px;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+      background: linear-gradient(180deg, #071028 0%, #061223 100%);
+      color: #e6eef8;
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+      padding:32px 16px;
+      display:flex;
+      justify-content:center;
+    }
+    .wrap{
+      width:100%;
+      max-width:var(--maxw);
+      display:grid;
+      grid-template-columns: 1fr 420px;
+      gap:24px;
+    }
+    header.site{
+      grid-column: 1 / -1;
+      display:flex;
+      align-items:center;
+      gap:16px;
+      padding:18px;
+      border-radius:12px;
+      background:linear-gradient(90deg,var(--card), rgba(10,14,26,0.6));
+      box-shadow: 0 6px 30px rgba(0,0,0,0.6);
+      margin-bottom:8px;
+    }
+    header.site img.logo{
+      width:72px;
+      height:72px;
+      border-radius:12px;
+      object-fit:cover;
+      background:linear-gradient(180deg,var(--accent),var(--accent-2));
+      padding:6px;
+    }
+    header .brand{
+      display:flex;
+      flex-direction:column;
+      gap:4px;
+    }
+    header h1{margin:0;font-size:20px;letter-spacing:0.6px}
+    header p{margin:0;color:var(--muted);font-size:13px}
+
+    /* Left column - form */
+    .card{
+      background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      border-radius:var(--radius);
+      padding:20px;
+      box-shadow: 0 6px 20px rgba(2,6,23,0.6);
+    }
+    .controls{display:flex;gap:12px;flex-wrap:wrap}
+    label{display:block;color:var(--muted);font-size:13px;margin-bottom:6px}
+    input[type=text], select {
+      width:100%;
+      padding:12px 10px;
+      border-radius:10px;
+      border:1px solid rgba(255,255,255,0.04);
+      background: rgba(255,255,255,0.02);
+      color:inherit;
+      outline:none;
+      font-size:14px;
+    }
+    .row{display:flex;gap:12px}
+    .col{flex:1}
+
+    .nominals{
+      display:flex;
+      gap:10px;
+      margin-top:10px;
+      flex-wrap:wrap;
+    }
+    .nominal{
+      background:var(--glass);
+      border-radius:10px;
+      padding:10px 12px;
+      cursor:pointer;
+      border:1px solid transparent;
+      min-width:120px;
+      text-align:center;
+      transition: all .18s;
+    }
+    .nominal.selected{
+      border:1px solid rgba(14,165,233,0.9);
+      box-shadow: 0 6px 18px rgba(2,6,23,0.6);
+      transform:translateY(-4px);
+    }
+    .pay-methods{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+    .pay{
+      padding:8px 10px;border-radius:10px;background:var(--glass);cursor:pointer;border:1px solid transparent;
+    }
+    .pay.selected{border:1px solid rgba(16,185,129,0.9)}
+
+    button.primary{
+      width:100%;
+      padding:12px;
+      margin-top:12px;
+      border-radius:10px;
+      background:linear-gradient(90deg,var(--accent),var(--accent-2));
+      border:none;color:#031024;font-weight:700;font-size:15px;cursor:pointer;
+    }
+
+    /* right column - invoice & history */
+    .sidebar{display:flex;flex-direction:column;gap:12px;position:sticky;top:32px}
+    .invoice{
+      padding:16px;border-radius:12px;background:linear-gradient(180deg, rgba(255,255,255,0.015), rgba(255,255,255,0.01));
+    }
+    .muted{color:var(--muted);font-size:13px}
+    .invoice .id{font-weight:700;font-size:18px;margin-top:8px}
+    .instructions{background:rgba(255,255,255,0.02);padding:12px;border-radius:8px;margin-top:10px}
+    .copy-btn{padding:8px;border-radius:8px;background:#0b1220;border:1px solid rgba(255,255,255,0.04);cursor:pointer;color:var(--muted)}
+    .history-list{max-height:300px;overflow:auto;padding-right:6px}
+    .order-item{padding:10px;border-radius:10px;margin-bottom:8px;background:rgba(255,255,255,0.015);border:1px solid rgba(255,255,255,0.02)}
+    .badge{display:inline-block;padding:6px 8px;border-radius:8px;background:rgba(255,255,255,0.03);font-size:12px}
+
+    footer.foot{grid-column:1/-1;text-align:center;color:var(--muted);margin-top:18px;font-size:13px}
+
+    /* admin modal */
+    .modal{
+      position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(2,6,23,0.6);z-index:80;display:none;
+    }
+    .modal .box{width:720px;max-width:95%;background:var(--card);padding:16px;border-radius:12px;color:inherit}
+    .table{width:100%;border-collapse:collapse}
+    .table th, .table td{padding:8px;border-bottom:1px dashed rgba(255,255,255,0.03);font-size:13px}
+    .small{font-size:12px;color:var(--muted)}
+    @media (max-width:980px){
+      .wrap{grid-template-columns:1fr; padding-bottom:40px}
+      .sidebar{position:relative;top:auto}
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header class="site card">
+      <img class="logo" src="hilz_logo.png" alt="Hilz Market Logo" />
+      <div class="brand">
+        <h1>Hilz Market — Top Up Game</h1>
+        <p class="muted">Cepat • Aman • Harga Bersaing — Simulasi Payment</p>
+      </div>
+
+      <div style="margin-left:auto;text-align:right">
+        <div class="small muted">Admin</div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <button onclick="openAdmin()" style="padding:8px 10px;border-radius:10px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.03);cursor:pointer;color:var(--muted)">Masuk Admin</button>
+        </div>
+      </div>
+    </header>
+
+    <!-- LEFT: FORM -->
+    <div class="card">
+      <h3 style="margin:0 0 8px 0">Form Top Up</h3>
+      <div class="muted small">Isi data berikut untuk membuat invoice pembayaran</div>
+
+      <form id="topupForm" onsubmit="createOrder(event)">
+        <label for="game">Pilih Game</label>
+        <select id="game" required>
+          <option value="">-- Pilih Game --</option>
+          <option value="Mobile Legends">Mobile Legends</option>
+          <option value="Free Fire">Free Fire</option>
+          <option value="PUBG Mobile">PUBG Mobile</option>
+          <option value="Genshin Impact">Genshin Impact</option>
+        </select>
+
+        <div class="row" style="margin-top:10px">
+          <div class="col">
+            <label for="playerId">ID / User</label>
+            <input id="playerId" type="text" placeholder="Masukkan ID player" required />
+          </div>
+          <div class="col">
+            <label for="nick">Nickname (opsional)</label>
+            <input id="nick" type="text" placeholder="Nickname (contoh: hilz_gamer)" />
+          </div>
+        </div>
+
+        <label style="margin-top:12px">Pilih Nominal</label>
+        <div class="nominals" id="nominals">
+          <!-- JS akan isi -->
+        </div>
+
+        <label style="margin-top:10px">Metode Pembayaran</label>
+        <div class="pay-methods" id="methods">
+          <!-- JS akan isi -->
+        </div>
+
+        <button class="primary" type="submit">Buat Invoice & Lihat Instruksi</button>
+      </form>
+
+      <hr style="border:none;height:1px;background:rgba(255,255,255,0.03);margin:16px 0" />
+
+      <h4 style="margin:0 0 8px 0">Tentang Hilz Market</h4>
+      <p class="muted small">Template ini adalah simulasi front-end untuk kebutuhan toko top up. Untuk produksi, tautkan ke payment gateway (Xendit, Midtrans, Tripay) & backend yang menangani verifikasi otomatis.</p>
+    </div>
+
+    <!-- RIGHT: INVOICE & HISTORY -->
+    <div class="sidebar">
+      <div class="invoice card" id="invoiceBox">
+        <div class="muted small">Invoice</div>
+        <div id="invoiceEmpty" style="margin-top:10px">Belum ada invoice. Buat order dari formulir kiri.</div>
+
+        <div id="invoiceDetail" style="display:none">
+          <div class="id" id="invId">INV-0001</div>
+          <div class="muted small" id="invCreated">Waktu: --</div>
+
+          <div style="margin-top:10px">
+            <div class="muted small">Game</div>
+            <div id="invGame" style="font-weight:700"></div>
+
+            <div class="muted small" style="margin-top:8px">Player</div>
+            <div id="invPlayer"></div>
+
+            <div class="muted small" style="margin-top:8px">Nominal</div>
+            <div id="invNominal" style="font-weight:700"></div>
+
+            <div class="muted small" style="margin-top:8px">Metode</div>
+            <div id="invMethod"></div>
+          </div>
+
+          <div class="instructions" id="payInstructions">
+            <!-- instructions -->
+          </div>
+
+          <div style="display:flex;gap:8px;margin-top:10px">
+            <button class="copy-btn" onclick="copyInvoice()">Salin Instruksi</button>
+            <button class="copy-btn" onclick="markPaid()">Saya Sudah Bayar (Simulasi)</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h4 style="margin:0 0 8px 0">Riwayat Pesanan</h4>
+        <div class="history-list" id="history"></div>
+      </div>
+
+      <div class="card small muted">
+        <b>Catatan:</b> Ini adalah sistem simulasi. Untuk pembayaran nyata, hubungkan endpoint backend & payment gateway. Jangan menyimpan data sensitif di client side.
+      </div>
+    </div>
+
+    <footer class="foot">© 2025 Hilz Market — Template Demo. Untuk produksi, integrasikan payment gateway & backend.</footer>
+  </div>
+
+  <!-- Admin modal -->
+  <div class="modal" id="adminModal">
+    <div class="box">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <h3 style="margin:0">Admin - Daftar Pesanan (Simulasi)</h3>
+        <div><button onclick="closeAdmin()" class="copy-btn">Tutup</button></div>
+      </div>
+      <div id="adminContent">
+        <div style="margin-bottom:8px">
+          <label>Password Admin</label>
+          <input id="adminPass" type="password" placeholder="Masukkan password (default: hilzadmin)" />
+          <button class="copy-btn" style="margin-top:8px" onclick="loadAdmin()">Muat Pesanan</button>
+        </div>
+        <div id="adminTable"></div>
+      </div>
+    </div>
+  </div>
+
+<script>
+  // --- data awal nominal & metode (bisa dikembangkan) ---
+  const NOMINALS = [
+    {id: 'N1', label: 'Rp10.000 - 86 Diamonds', amount: 10000},
+    {id: 'N2', label: 'Rp20.000 - 170 Diamonds', amount: 20000},
+    {id: 'N3', label: 'Rp50.000 - 425 Diamonds', amount: 50000},
+    {id: 'N4', label: 'Rp100.000 - 850 Diamonds', amount: 100000}
+  ];
+  const METHODS = [
+    {id:'M_DANA', label:'DANA', detail:'Nomor: 0812-3456-7890 (Hilz Market)'},
+    {id:'M_OVO', label:'OVO', detail:'Nomor: 0821-9876-5432 (Hilz Market)'},
+    {id:'M_QRIS', label:'QRIS', detail:'Scan QRIS pada aplikasi pembayaran Anda.'},
+    {id:'M_BCA', label:'Transfer Bank (BCA)', detail:'A/N Hilz Market — 1234567890'}
+  ];
+
+  // render nominal buttons & methods
+  const nominalsBox = document.getElementById('nominals');
+  NOMINALS.forEach(n=>{
+    const el = document.createElement('div');
+    el.className='nominal';
+    el.dataset.id = n.id;
+    el.innerHTML = `<div style="font-weight:700">${n.label.split(' - ')[1]}</div><div class="small muted">${n.label.split(' - ')[0]}</div>`;
+    el.addEventListener('click', ()=> {
+      document.querySelectorAll('.nominal').forEach(x=>x.classList.remove('selected'));
+      el.classList.add('selected');
+      el.dataset.amount = n.amount;
+    });
+    nominalsBox.appendChild(el);
+  });
+
+  const methodsBox = document.getElementById('methods');
+  METHODS.forEach(m=>{
+    const el = document.createElement('div');
+    el.className='pay';
+    el.dataset.id = m.id;
+    el.innerHTML = `<div style="font-weight:700">${m.label}</div><div class="small muted">${m.detail}</div>`;
+    el.addEventListener('click', ()=> {
+      document.querySelectorAll('.pay').forEach(x=>x.classList.remove('selected'));
+      el.classList.add('selected');
+    });
+    methodsBox.appendChild(el);
+  });
+
+  // helper generate invoice id
+  function genInvoiceId(){
+    const t = Date.now().toString(36).toUpperCase();
+    const r = Math.random().toString(36).substring(2,7).toUpperCase();
+    return 'HILZ-'+ t.slice(-6) + '-' + r;
+  }
+
+  // create order
+  function createOrder(e){
+    e.preventDefault();
+    const game = document.getElementById('game').value;
+    const player = document.getElementById('playerId').value.trim();
+    const nick = document.getElementById('nick').value.trim();
+    const selNominal = document.querySelector('.nominal.selected');
+    const selMethod = document.querySelector('.pay.selected');
+
+    if(!game || !player || !selNominal || !selMethod){
+      alert('Lengkapi semua data: game, ID player, nominal, dan metode pembayaran.');
+      return;
+    }
+    const nominalLabel = selNominal.innerText.split('\\n').join(' ');
+    const amount = selNominal.dataset.amount || 0;
+    const methodId = selMethod.dataset.id;
+    const method = METHODS.find(x=>x.id===methodId);
+
+    const invoice = {
+      id: genInvoiceId(),
+      created: new Date().toISOString(),
+      game, player, nick,
+      nominal: nominalLabel,
+      amount: Number(amount),
+      method: method.label,
+      methodDetail: method.detail,
+      status: 'pending'
+    };
+
+    // simpan ke localStorage
+    const orders = JSON.parse(localStorage.getItem('hilz_orders')||'[]');
+    orders.unshift(invoice);
+    localStorage.setItem('hilz_orders', JSON.stringify(orders));
+
+    showInvoice(invoice);
+    renderHistory();
+    // scroll to invoice
+    document.getElementById('invoiceBox').scrollIntoView({behavior:'smooth'});
+  }
+
+  function showInvoice(inv){
+    document.getElementById('invoiceEmpty').style.display='none';
+    const box = document.getElementById('invoiceDetail');
+    box.style.display='block';
+    document.getElementById('invId').innerText = inv.id;
+    document.getElementById('invCreated').innerText = 'Waktu: '+ (new Date(inv.created)).toLocaleString();
+    document.getElementById('invGame').innerText = inv.game;
+    document.getElementById('invPlayer').innerText = inv.player + (inv.nick?(' ('+inv.nick+')'):'');
+    document.getElementById('invNominal').innerText = inv.nominal + ' — Rp' + numberWithCommas(inv.amount);
+    document.getElementById('invMethod').innerText = inv.method;
+
+    const instr = document.getElementById('payInstructions');
+    instr.innerHTML = `
+      <div class="small muted">Instruksi Pembayaran:</div>
+      <div style="margin-top:6px">
+        <b>${inv.method}</b><br/>
+        ${inv.methodDetail}<br/>
+        <div style="margin-top:8px" class="small muted">Jumlah yang harus dibayar:</div>
+        <div style="font-weight:700">Rp ${numberWithCommas(inv.amount)}</div>
+        <div style="margin-top:8px" class="small muted">Catatan:</div>
+        <div class="small">Tuliskan <b>Invoice: ${inv.id}</b> pada kolom berita transfer / catatan pembayaran agar admin dapat memverifikasi.</div>
+      </div>
+    `;
+    // Save current invoice id for copy
+    window.currentInvoice = inv;
+  }
+
+  function numberWithCommas(x){
+    return x.toString().replace(/\\B(?=(\\d{3})+(?!\\d))/g, ".");
+  }
+
+  function copyInvoice(){
+    if(!window.currentInvoice){ alert('Belum ada invoice untuk disalin.'); return; }
+    const inv = window.currentInvoice;
+    const text = `Invoice: ${inv.id}\\nGame: ${inv.game}\\nID: ${inv.player}\\nNominal: ${inv.nominal}\\nMetode: ${inv.method}\\nJumlah: Rp ${numberWithCommas(inv.amount)}\\nInstruksi: ${inv.methodDetail}`;
+    navigator.clipboard.writeText(text).then(()=> alert('Instruksi invoice disalin ke clipboard!'));
+  }
+
+  function renderHistory(){
+    const history = document.getElementById('history');
+    const orders = JSON.parse(localStorage.getItem('hilz_orders')||'[]');
+    history.innerHTML = '';
+    if(orders.length===0){ history.innerHTML = '<div class="small muted">Belum ada pesanan.</div>'; return; }
+    orders.forEach(o=>{
+      const el = document.createElement('div');
+      el.className='order-item';
+      el.innerHTML = `<div style="display:flex;justify-content:space-between;align-items:center">
+        <div><b>${o.id}</b><div class="small muted">${o.game} • ${o.player}</div></div>
+        <div style="text-align:right">
+          <div class="badge">${o.status}</div>
+          <div class="small muted" style="margin-top:6px">Rp ${numberWithCommas(o.amount)}</div>
+        </div>
+      </div>`;
+      el.addEventListener('click', ()=> {
+        showInvoice(o);
+      });
+      history.appendChild(el);
+    });
+  }
+
+  // mark paid (simulasi) - ubah status pesanan teratas
+  function markPaid(){
+    if(!window.currentInvoice){ alert('Belum ada invoice aktif.'); return; }
+    const orders = JSON.parse(localStorage.getItem('hilz_orders')||'[]');
+    const idx = orders.findIndex(x=>x.id===window.currentInvoice.id);
+    if(idx>=0){
+      orders[idx].status = 'paid';
+      localStorage.setItem('hilz_orders', JSON.stringify(orders));
+      renderHistory();
+      alert('Status diubah menjadi "paid" (simulasi). Untuk produksi, verifikasi harus otomatis via backend.');
+    }
+  }
+
+  // admin modal
+  function openAdmin(){ document.getElementById('adminModal').style.display='flex'; }
+  function closeAdmin(){ document.getElementById('adminModal').style.display='none'; }
+
+  function loadAdmin(){
+    const pass = document.getElementById('adminPass').value;
+    if(pass !== 'hilzadmin'){ alert('Password salah. (default: hilzadmin)'); return; }
+    const orders = JSON.parse(localStorage.getItem('hilz_orders')||'[]');
+    let html = '';
+    if(orders.length===0){ html = '<div class="small muted">Belum ada pesanan.</div>'; }
+    else {
+      html = `<table class="table"><thead><tr><th>Invoice</th><th>Game</th><th>Player</th><th>Amount</th><th>Status</th></tr></thead><tbody>`;
+      orders.forEach(o=>{
+        html += `<tr><td><b>${o.id}</b><div class="small muted">${new Date(o.created).toLocaleString()}</div></td><td>${o.game}</td><td>${o.player}</td><td>Rp ${numberWithCommas(o.amount)}</td><td>${o.status}</td></tr>`;
+      });
+      html += `</tbody></table>`;
+    }
+    document.getElementById('adminTable').innerHTML = html;
+  }
+
+  // init
+  renderHistory();
+  // optionally show most recent invoice if exists
+  const existing = JSON.parse(localStorage.getItem('hilz_orders')||'[]')[0];
+  if(existing) { showInvoice(existing); window.currentInvoice = existing; }
+
+</script>
+</body>
+</html>
